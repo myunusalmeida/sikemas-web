@@ -19,6 +19,10 @@ import AdminNomorDarurat from './pages/admin/AdminNomorDarurat';
 import AdminNomorForm from './pages/admin/AdminNomorForm';
 import AdminHero from './pages/admin/AdminHero';
 import AdminHeroForm from './pages/admin/AdminHeroForm';
+import AdminVideo from './pages/admin/AdminVideo';
+import AdminVideoForm from './pages/admin/AdminVideoForm';
+import AdminChecklist from './pages/admin/AdminChecklist';
+import AdminChecklistItemForm from './pages/admin/AdminChecklistItemForm';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -44,6 +48,12 @@ export default function App() {
             <Route path="hero" element={<AdminHero />} />
             <Route path="hero/new" element={<AdminHeroForm />} />
             <Route path="hero/:id/edit" element={<AdminHeroForm />} />
+            <Route path="video" element={<AdminVideo />} />
+            <Route path="video/new" element={<AdminVideoForm />} />
+            <Route path="video/:id/edit" element={<AdminVideoForm />} />
+            <Route path="checklist" element={<AdminChecklist />} />
+            <Route path="checklist/new" element={<AdminChecklistItemForm />} />
+            <Route path="checklist/:id/edit" element={<AdminChecklistItemForm />} />
             <Route path="berita" element={<AdminBerita />} />
             <Route path="berita/new" element={<AdminBeritaForm />} />
             <Route path="berita/:id/edit" element={<AdminBeritaForm />} />

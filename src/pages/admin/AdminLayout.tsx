@@ -1,5 +1,5 @@
 import { Navigate, Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
-import { LayoutDashboard, Newspaper, Phone, LogOut, ExternalLink, Menu, X, Image as ImageIcon } from 'lucide-react';
+import { LayoutDashboard, Newspaper, Phone, LogOut, ExternalLink, Menu, X, Image as ImageIcon, Video, CheckSquare } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import Logo from '../../components/Logo';
@@ -7,6 +7,8 @@ import Logo from '../../components/Logo';
 const nav = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/admin/hero', label: 'Hero Banner', icon: ImageIcon },
+  { to: '/admin/video', label: 'Video Edukasi', icon: Video },
+  { to: '/admin/checklist', label: 'Checklist Keselamatan', icon: CheckSquare },
   { to: '/admin/berita', label: 'Berita', icon: Newspaper },
   { to: '/admin/nomor-darurat', label: 'Nomor Darurat', icon: Phone },
 ];

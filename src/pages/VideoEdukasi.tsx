@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  Video, Play, Youtube, ShieldCheck, LifeBuoy, Radio, Cloud,
-  Compass, Heart, AlertTriangle, Clock, ExternalLink, type LucideIcon,
+  Video, Play, Youtube, ShieldCheck, LifeBuoy, Radio,
+  Compass, Heart, AlertTriangle, Clock, ExternalLink, FileText, type LucideIcon,
 } from 'lucide-react';
 import { PageHeader } from '../components/ui';
+import { supabase, type VideoDb } from '../lib/supabase';
 
 type VideoItem = {
   id: string;
@@ -14,7 +15,7 @@ type VideoItem = {
   kategori: string;
 };
 
-const videos: VideoItem[] = [
+const defaultVideos: VideoItem[] = [
   {
     id: 'v1',
     judul: 'Pentingnya Alat Keselamatan dan APAR di Kapal Perikanan | Edukasi Keselamatan PPN Kejawanan Cirebon',
@@ -30,14 +31,6 @@ const videos: VideoItem[] = [
     youtube_id: '1oOi73pmHQg',
     durasi: '2:48',
     kategori: 'Komunikasi',
-  },
-  {
-    id: 'v3',
-    judul: 'Membaca Prakiraan Cuaca Maritim BMKG',
-    deskripsi: 'Cara membaca dan memahami prakiraan cuaca maritim dari BMKG sebelum melaut.',
-    youtube_id: 'vxMdKuCO7sw',
-    durasi: '4:30',
-    kategori: 'Cuaca',
   },
   {
     id: 'v4',
@@ -56,39 +49,54 @@ const videos: VideoItem[] = [
     kategori: 'Navigasi',
   },
   {
-    id: 'v6',
-    judul: 'Pemeriksaan Kapal Sebelum Berlayar',
-    deskripsi: 'Checklist pemeriksaan mesin, lambung, dan alat keselamatan kapal.',
-    youtube_id: 'V1tKhYnBW0g',
-    durasi: '8:30',
-    kategori: 'Kapal',
-  },
-  {
     id: 'v7',
     judul: 'Kelengkapan Dokumen dan Prosedur Penerbitan Surat Persetujuan Berlayar (SPB)',
     deskripsi: 'Panduan singkat kelengkapan dokumen dan prosedur penerbitan Surat Persetujuan Berlayar (SPB) bagi nelayan.',
     youtube_id: 'EHfMUkVctbU',
     durasi: '2:59',
-    kategori: 'Kapal',
+    kategori: 'Dokumen',
   },
 ];
-
-const categories = ['Semua', 'Perlengkapan', 'Komunikasi', 'Cuaca', 'P3K', 'Navigasi', 'Kapal'];
 
 const catIcon: Record<string, LucideIcon> = {
   Perlengkapan: LifeBuoy,
   Komunikasi: Radio,
-  Cuaca: Cloud,
   P3K: Heart,
   Navigasi: Compass,
   Kapal: ShieldCheck,
+  Dokumen: FileText,
 };
 
 export default function VideoEdukasi() {
+  const [videosList, setVideosList] = useState<VideoItem[]>(defaultVideos);
   const [active, setActive] = useState('Semua');
   const [selected, setSelected] = useState<VideoItem | null>(null);
 
-  const filtered = active === 'Semua' ? videos : videos.filter((v) => v.kategori === active);
+  useEffect(() => {
+    supabase
+      .from('videos')
+      .select('*')
+      .eq('is_active', true)
+      .order('urutan', { ascending: true })
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setVideosList(
+            data.map((item: VideoDb) => ({
+              id: item.id,
+              judul: item.judul,
+              deskripsi: item.deskripsi,
+              youtube_id: item.youtube_id,
+              durasi: item.durasi || '0:00',
+              kategori: item.kategori,
+            }))
+          );
+        }
+      });
+  }, []);
+
+  const categories = ['Semua', ...Array.from(new Set(videosList.map((v) => v.kategori)))];
+  const filtered = active === 'Semua' ? videosList : videosList.filter((v) => v.kategori === active);
 
   return (
     <div className="bg-ink-50/40 min-h-screen">
@@ -116,90 +124,76 @@ export default function VideoEdukasi() {
                 {selected.kategori}
               </span>
               <h2 className="mt-2 text-xl font-extrabold text-ink-900">{selected.judul}</h2>
-              <p className="mt-1 text-sm text-ink-600">{selected.deskripsi}</p>
-              <button
-                onClick={() => setSelected(null)}
-                className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary-600 hover:text-primary-700"
-              >
-                ← Kembali ke daftar video
-              </button>
+              <p className="mt-1 text-sm text-ink-500">{selected.deskripsi}</p>
             </div>
           </div>
-        ) : (
-          <div className="mb-8 flex items-center gap-4 rounded-2xl bg-gradient-to-br from-primary-700 to-primary-900 p-6 text-white shadow-lg">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/20">
-              <Youtube className="h-7 w-7" />
-            </div>
-            <div>
-              <p className="text-lg font-bold">Belajar Lewat Video</p>
-              <p className="text-sm text-primary-100">Tonton panduan praktis keselamatan melaut dari pelatih & petugas berpengalaman.</p>
-            </div>
-          </div>
-        )}
+        ) : null}
 
-        {/* Filter */}
-        <div className="mb-6 flex gap-2 overflow-x-auto no-scrollbar pb-1">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActive(cat)}
-              className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                active === cat
-                  ? 'bg-primary-600 text-white shadow-md'
-                  : 'bg-white text-ink-600 ring-1 ring-ink-200 hover:bg-ink-50'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* Video grid */}
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((v) => {
-            const Icon = catIcon[v.kategori] ?? Video;
+        {/* Category filter */}
+        <div className="mb-6 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          {categories.map((cat) => {
+            const Icon = catIcon[cat] || Video;
+            const isActive = active === cat;
             return (
               <button
-                key={v.id}
-                onClick={() => setSelected(v)}
-                className="group overflow-hidden rounded-2xl border border-ink-100 bg-white text-left shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-ink-200/40"
+                key={cat}
+                type="button"
+                onClick={() => setActive(cat)}
+                className={`inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition-all ${
+                  isActive
+                    ? 'bg-primary-600 text-white shadow-md'
+                    : 'bg-white text-ink-600 hover:bg-ink-100 hover:text-ink-900 shadow-sm border border-ink-100'
+                }`}
               >
-                <div className="relative aspect-video w-full overflow-hidden bg-ink-100">
-                  <img
-                    src={`https://i.ytimg.com/vi/${v.youtube_id}/hqdefault.jpg`}
-                    alt={v.judul}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center bg-ink-950/30 transition-colors group-hover:bg-ink-950/40">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90 shadow-lg transition-transform group-hover:scale-110">
-                      <Play className="h-6 w-6 translate-x-0.5 text-primary-700" fill="currentColor" />
-                    </div>
-                  </div>
-                  <span className="absolute bottom-2 right-2 rounded-md bg-ink-950/80 px-2 py-0.5 text-xs font-semibold text-white">
-                    {v.durasi}
-                  </span>
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center gap-2">
-                    <Icon className="h-4 w-4 text-primary-600" />
-                    <span className="text-xs font-bold uppercase tracking-wider text-primary-600">{v.kategori}</span>
-                  </div>
-                  <h3 className="mt-1.5 line-clamp-2 text-sm font-bold leading-snug text-ink-900 group-hover:text-primary-700">
-                    {v.judul}
-                  </h3>
-                  <p className="mt-1 line-clamp-2 text-xs text-ink-500">{v.deskripsi}</p>
-                </div>
+                {cat !== 'Semua' && <Icon className="h-3.5 w-3.5" />}
+                {cat}
               </button>
             );
           })}
         </div>
 
-        <div className="mt-8 flex items-start gap-3 rounded-2xl bg-amber-50 p-5 text-amber-800 ring-1 ring-amber-200">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
-          <p className="text-sm">
-            Video dimuat dari YouTube. Pastikan koneksi internet stabil. Untuk pelatihan tatap muka, hubungi BASARNAS atau Syahbandar terdekat.
-          </p>
+        {/* Video Grid */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((video) => (
+            <div
+              key={video.id}
+              onClick={() => setSelected(video)}
+              className="group cursor-pointer overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+            >
+              <div className="relative aspect-video w-full overflow-hidden bg-ink-900">
+                <img
+                  src={`https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`}
+                  alt={video.judul}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-ink-950/70 via-transparent to-transparent" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90 text-primary-600 shadow-xl backdrop-blur-sm transition-transform duration-300 group-hover:scale-110">
+                    <Play className="ml-1 h-6 w-6 fill-current" />
+                  </div>
+                </div>
+                <span className="absolute bottom-3 right-3 rounded-md bg-ink-950/80 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
+                  {video.durasi}
+                </span>
+                <span className="absolute top-3 left-3 rounded-full bg-white/90 px-2.5 py-0.5 text-[10px] font-bold text-ink-900 backdrop-blur-sm shadow">
+                  {video.kategori}
+                </span>
+              </div>
+
+              <div className="p-5">
+                <h3 className="font-extrabold text-ink-900 line-clamp-2 text-base group-hover:text-primary-600 transition-colors">
+                  {video.judul}
+                </h3>
+                <p className="mt-2 text-xs text-ink-500 line-clamp-2 leading-relaxed">
+                  {video.deskripsi}
+                </p>
+                <div className="mt-4 flex items-center justify-between border-t border-ink-100 pt-3 text-xs font-semibold text-primary-600">
+                  <span>Tonton Video</span>
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

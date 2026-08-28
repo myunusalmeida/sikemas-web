@@ -49,3 +49,37 @@ export type HeroSlide = {
   is_active: boolean;
   created_at: string;
 };
+
+export type VideoDb = {
+  id: string;
+  judul: string;
+  deskripsi: string;
+  youtube_id: string;
+  durasi: string;
+  kategori: string;
+  urutan: number;
+  is_active: boolean;
+  created_at: string;
+};
+
+export type ChecklistCategoryDb = {
+  id: string;
+  title: string;
+  desc_text: string | null;
+  icon: string;
+  color: string;
+  urutan: number;
+  created_at: string;
+};
+
+export type ChecklistItemDb = {
+  id: string;
+  category_id: string;
+  label: string;
+  desc_text: string;
+  icon: string;
+  icon_color: string;
+  urutan: number;
+  is_active: boolean;
+  created_at: string;
+};
