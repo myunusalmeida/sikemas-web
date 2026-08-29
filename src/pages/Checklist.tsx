@@ -155,165 +155,181 @@ export default function Checklist() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(checked));
   }, [checked]);
 
+  const toggle = (id: string) =>
+    setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const resetAll = () => {
+    if (window.confirm('Reset semua checklist?')) setChecked({});
+  };
+
   const totalItems = useMemo(
-    () => categoriesList.reduce((acc, cat) => acc + cat.items.length, 0),
+    () => categoriesList.reduce((n, c) => n + c.items.length, 0),
     [categoriesList]
   );
-
   const checkedCount = useMemo(
     () => Object.values(checked).filter(Boolean).length,
     [checked]
   );
-
-  const percent = totalItems ? Math.round((checkedCount / totalItems) * 100) : 0;
-  const isComplete = checkedCount === totalItems && totalItems > 0;
-
-  const toggle = (id: string) => {
-    setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const resetAll = () => {
-    if (window.confirm('Reset semua centang checklist?')) {
-      setChecked({});
-    }
-  };
+  const progress = totalItems ? Math.round((checkedCount / totalItems) * 100) : 0;
+  const allDone = checkedCount === totalItems && totalItems > 0;
 
   return (
     <div className="bg-ink-50/40 min-h-screen">
       <div className="container-app py-10">
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary-500 text-white shadow-md">
-                <CheckSquare className="h-6 w-6" strokeWidth={2.5} />
-              </div>
-              <div>
-                <h1 className="text-2xl font-extrabold text-ink-900 sm:text-3xl">Checklist Keselamatan</h1>
-                <p className="text-sm text-ink-500">Periksa perlengkapan sebelum kapal meninggalkan pelabuhan</p>
-              </div>
-            </div>
-          </div>
-          {checkedCount > 0 && (
-            <button
-              onClick={resetAll}
-              className="inline-flex items-center gap-1.5 self-start rounded-full bg-white px-4 py-2 text-xs font-bold text-ink-600 shadow-sm ring-1 ring-ink-200 hover:bg-ink-100 sm:self-auto"
-            >
-              <RotateCcw className="h-3.5 w-3.5" /> Reset Centang
-            </button>
-          )}
-        </div>
+        {/* Hero Header Banner */}
+        <div className="relative mb-8 flex overflow-hidden rounded-2xl shadow-xl" style={{ minHeight: '410px' }}>
 
-        {/* Progress Bar Card */}
-        <div className="mb-10 overflow-hidden rounded-3xl border border-ink-100 bg-white p-6 shadow-sm sm:p-8">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-ink-400">Progress Kesiapan Berlayar</p>
-              <div className="mt-1 flex items-baseline gap-2">
-                <span className="text-4xl font-extrabold text-ink-900 sm:text-5xl">{percent}%</span>
-                <span className="text-sm font-semibold text-ink-500">
-                  ({checkedCount} dari {totalItems} item terpenuhi)
-                </span>
-              </div>
-            </div>
-            {isComplete ? (
-              <div className="inline-flex items-center gap-2 rounded-2xl bg-secondary-50 px-4 py-3 text-sm font-bold text-secondary-700 ring-1 ring-secondary-200">
-                <CheckCircle2 className="h-5 w-5 text-secondary-600" />
-                Siap Berlayar! Semua item terpenuhi
-              </div>
-            ) : (
-              <div className="inline-flex items-center gap-2 rounded-2xl bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700 ring-1 ring-amber-200">
-                <AlertTriangle className="h-5 w-5 text-amber-600" />
-                Lengkapi semua item sebelum melaut
-              </div>
-            )}
-          </div>
+          {/* Left: content panel */}
+          <div className="relative z-10 flex w-full sm:w-[65%] lg:w-[58%] items-center px-6 py-10 sm:px-10 sm:py-14">
+            <div className="flex flex-col gap-5">
+              <div className="flex items-center gap-5">
+                <svg className="h-24 w-16 sm:h-28 sm:w-20 shrink-0" viewBox="0 0 72 96" fill="none" aria-hidden="true">
+                  <rect x="6" y="10" width="54" height="80" rx="7" fill="white" stroke="#1d4ed8" strokeWidth="4" />
+                  <rect x="22" y="3" width="22" height="16" rx="5" fill="white" stroke="#1d4ed8" strokeWidth="4" />
+                  <path d="m15 34 4 4 7-8M31 34h22M15 50l4 4 7-8M31 50h22M15 66l4 4 7-8M31 66h22" stroke="#1d4ed8" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="m48 86 14-14 6 6-14 14-9 3 3-9Z" fill="white" stroke="#f4b942" strokeWidth="3" strokeLinejoin="round" />
+                  <path d="m62 72 2.5-2.5a2.5 2.5 0 0 1 3.5 0l1 1a2.5 2.5 0 0 1 0 3.5L66 77.5 62 72Z" fill="white" stroke="#d88924" strokeWidth="2" />
+                </svg>
 
-          <div className="mt-6 h-3.5 w-full overflow-hidden rounded-full bg-ink-100">
-            <div
-              className={`h-full transition-all duration-500 ${
-                isComplete ? 'bg-secondary-500' : percent > 50 ? 'bg-primary-600' : 'bg-amber-500'
-              }`}
-              style={{ width: `${percent}%` }}
-            />
-          </div>
-        </div>
+                <div className="min-w-0">
+                  {/* Label */}
+                  <p className="mb-2 sm:mb-3 text-xs font-bold uppercase tracking-[0.2em] text-primary-600 [text-shadow:0_1px_2px_rgba(255,255,255,0.9)]">
+                    Panduan Keselamatan Nelayan
+                  </p>
 
-        {/* Category List */}
-        <div className="space-y-8">
-          {categoriesList.map((cat) => {
-            const CatIcon = cat.icon;
-            const catCheckedCount = cat.items.filter((item) => checked[item.id]).length;
-            const catComplete = catCheckedCount === cat.items.length && cat.items.length > 0;
-
-            return (
-              <div key={cat.id} className="overflow-hidden rounded-3xl border border-ink-100 bg-white p-6 shadow-sm sm:p-8">
-                <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${cat.color} text-white shadow-md`}>
-                      <CatIcon className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-extrabold text-ink-900 sm:text-xl">{cat.title}</h2>
-                      <p className="text-xs text-ink-500 sm:text-sm">{cat.desc}</p>
-                    </div>
-                  </div>
-                  <span className={`self-start rounded-full px-3 py-1 text-xs font-bold sm:self-auto ${
-                    catComplete ? 'bg-secondary-50 text-secondary-700 ring-1 ring-secondary-200' : 'bg-ink-100 text-ink-600'
-                  }`}>
-                    {catCheckedCount}/{cat.items.length} Selesai
-                  </span>
+                  {/* Title */}
+                  <h1 className="font-header text-2xl font-extrabold leading-tight tracking-tight text-primary-900 sm:text-[2.1rem] [text-shadow:0_1px_3px_rgba(255,255,255,0.9)]">
+                    Checklist Mandiri
+                  </h1>
+                  <h2 className="font-header text-xl font-extrabold leading-tight tracking-tight text-primary-600 sm:text-3xl [text-shadow:0_1px_3px_rgba(255,255,255,0.9)]">
+                    Keselamatan Berlayar
+                  </h2>
                 </div>
+              </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
+              {/* Subtitle */}
+              <p className="max-w-sm text-sm sm:text-base leading-relaxed text-ink-700 [text-shadow:0_1px_2px_rgba(255,255,255,0.9)]">
+                Panduan mandiri untuk membantu Anda mempersiapkan pelayaran dengan lebih aman sebelum berlayar.
+              </p>
+
+              {/* Stat pills */}
+              <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <div className="inline-flex items-center gap-2 rounded-xl bg-primary-700 px-4 py-2.5 shadow-md">
+                  <CheckSquare className="h-4 w-4 text-white" strokeWidth={2.5} />
+                  <span className="text-sm font-bold text-white">{totalItems} Item Pemeriksaan</span>
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-xl border border-secondary-300 bg-secondary-50 px-4 py-2.5 shadow-sm">
+                  <ShieldCheck className="h-4 w-4 text-secondary-700" strokeWidth={2.5} />
+                  <span className="text-sm font-bold text-secondary-800">Standar BASARNAS</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Hero image and readability overlay */}
+          <img
+            src="/images/hero/WhatsApp_Image_2026-08-23_at_15.08.03.jpeg"
+            alt="Kapal nelayan Indonesia"
+            className="absolute inset-0 z-0 h-full w-full object-cover object-center"
+            style={{ filter: 'brightness(1.1) contrast(1.06) saturate(1.05)' }}
+          />
+          <div className="absolute inset-0 z-0 bg-gradient-to-r from-white/95 via-white/80 to-transparent sm:from-white/90 sm:via-white/70" />
+
+        </div>
+
+        {/* Progress Circular Card */}
+        <div className="mb-8 rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-ink-700">Progres Kesiapan</p>
+              <p className="text-2xl font-extrabold text-ink-900">{progress}%</p>
+              <p className="text-xs text-ink-500">{checkedCount} dari {totalItems} item tercentang</p>
+            </div>
+            <div className="relative h-20 w-20">
+              <svg className="h-20 w-20 -rotate-90" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="#eceef2" strokeWidth="3.5" />
+                <circle
+                  cx="18" cy="18" r="15.5" fill="none"
+                  stroke={allDone ? '#0f9a5b' : '#1b7df5'}
+                  strokeWidth="3.5"
+                  strokeDasharray={`${(progress / 100) * 97.4} 97.4`}
+                  strokeLinecap="round"
+                  className="transition-all duration-500"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                {allDone ? <CheckCircle2 className="h-7 w-7 text-secondary-500" /> : <span className="text-xs font-bold text-ink-700">{progress}%</span>}
+              </div>
+            </div>
+          </div>
+          {allDone && (
+            <div className="mt-4 flex items-center gap-2 rounded-xl bg-secondary-50 px-4 py-3 text-sm font-semibold text-secondary-700 ring-1 ring-secondary-200">
+              <CheckCircle2 className="h-5 w-5" />
+              Semua siap! Tetap waspada dan selamat melaut.
+            </div>
+          )}
+          <div className="mt-4 flex justify-end">
+            <button onClick={resetAll} className="inline-flex items-center gap-1.5 rounded-full bg-ink-100 px-3 py-1.5 text-xs font-semibold text-ink-600 hover:bg-ink-200">
+              <RotateCcw className="h-3.5 w-3.5" /> Reset
+            </button>
+          </div>
+        </div>
+
+        {/* Categories */}
+        <div className="space-y-6">
+          {categoriesList.map((cat) => {
+            const Icon = cat.icon;
+            const catDone = cat.items.length > 0 && cat.items.every((it) => checked[it.id]);
+            return (
+              <div key={cat.id} className="overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-sm">
+                <div className="flex items-center gap-3 border-b border-ink-100 p-5">
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${cat.color} text-white shadow-md`}>
+                    <Icon className="h-5 w-5" strokeWidth={2.5} />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-base font-bold text-ink-900">{cat.title}</h2>
+                    <p className="text-xs text-ink-500">{cat.desc}</p>
+                  </div>
+                  {catDone && <CheckCircle2 className="h-5 w-5 text-secondary-500" />}
+                </div>
+                <ul className="divide-y divide-ink-50">
                   {cat.items.map((item) => {
-                    const isChecked = Boolean(checked[item.id]);
                     const ItemIcon = item.icon;
-
+                    const isChecked = !!checked[item.id];
                     return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => toggle(item.id)}
-                        className={`group flex items-start gap-3.5 rounded-2xl border p-4 text-left transition-all ${
-                          isChecked
-                            ? 'border-secondary-200 bg-secondary-50/40 text-ink-900 shadow-sm'
-                            : 'border-ink-100 bg-white hover:border-ink-300 hover:bg-ink-50/50'
-                        }`}
-                      >
-                        <div className="mt-0.5 shrink-0">
-                          {isChecked ? (
-                            <CheckCircle2 className="h-6 w-6 text-secondary-600" />
-                          ) : (
-                            <Circle className="h-6 w-6 text-ink-300 group-hover:text-ink-400" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <ItemIcon className={`h-4 w-4 shrink-0 ${item.iconColor}`} />
-                            <p className={`text-sm font-bold ${isChecked ? 'line-through text-ink-500' : 'text-ink-900'}`}>
-                              {item.label}
-                            </p>
+                      <li key={item.id}>
+                        <button
+                          onClick={() => toggle(item.id)}
+                          className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-ink-50/60"
+                        >
+                          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${isChecked ? 'bg-secondary-100 text-secondary-600' : 'bg-ink-100 ' + item.iconColor}`}>
+                            <ItemIcon className="h-5 w-5" strokeWidth={2.2} />
                           </div>
-                          <p className="mt-1 text-xs leading-relaxed text-ink-500">{item.desc}</p>
-                        </div>
-                      </button>
+                          <div className="flex-1">
+                            <p className={`text-sm font-semibold ${isChecked ? 'text-ink-500 line-through' : 'text-ink-900'}`}>{item.label}</p>
+                            <p className="text-xs text-ink-500">{item.desc}</p>
+                          </div>
+                          {isChecked ? (
+                            <CheckCircle2 className="h-6 w-6 text-secondary-500" />
+                          ) : (
+                            <Circle className="h-6 w-6 text-ink-300" />
+                          )}
+                        </button>
+                      </li>
                     );
                   })}
-                </div>
+                </ul>
               </div>
             );
           })}
         </div>
 
-        {/* Warning Note */}
-        <div className="mt-10 rounded-2xl bg-amber-50 p-5 text-xs text-amber-900 ring-1 ring-amber-200/80 sm:text-sm">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-            <div>
-              <p className="font-bold text-amber-900">Penting untuk diperhatikan:</p>
-              <p className="mt-0.5">Jangan berlayar jika ada item belum terpenuhi. Keselamatan nyawa lebih utama daripada hasil tangkapan. Jika kondisi cuaca memburuk, segera kembali ke pelabuhan terdekat.</p>
-            </div>
+        {/* Warning */}
+        <div className="mt-8 flex items-start gap-3 rounded-2xl bg-amber-50 p-5 text-amber-800 ring-1 ring-amber-200">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+          <div className="text-sm">
+            <p className="font-bold">Penting!</p>
+            <p className="mt-0.5">Jangan berlayar jika ada item belum terpenuhi. Keselamatan nyawa lebih utama daripada hasil tangkapan. Jika kondisi cuaca memburuk, segera kembali ke pelabuhan terdekat.</p>
           </div>
         </div>
       </div>
