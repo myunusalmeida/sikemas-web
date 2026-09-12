@@ -42,7 +42,7 @@ export default function InfoCuaca() {
     setError(null);
     
     // Check if Supabase Edge Function is available, or fetch directly from live BMKG API
-    const edgeUrl = import.meta.env.VITE_SUPABASE_URL ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/cuaca-maritim?lat=5.05&lon=96.99` : null;
+    const edgeUrl = import.meta.env.VITE_SUPABASE_URL ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/cuaca-maritim?lat=5.38&lon=96.00` : null;
     
     if (edgeUrl) {
       fetch(edgeUrl, {

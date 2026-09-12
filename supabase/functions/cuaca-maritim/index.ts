@@ -13,24 +13,22 @@ Deno.serve(async (req: Request) => {
 
   try {
     const url = new URL(req.url);
-    const lat = parseFloat(url.searchParams.get("lat") || "5.05");
-    const lon = parseFloat(url.searchParams.get("lon") || "96.99");
+    const lat = parseFloat(url.searchParams.get("lat") || "5.38");
+    const lon = parseFloat(url.searchParams.get("lon") || "96.00");
 
-    // BMKG open data: prakiraan cuaca publik per provinsi/kota
-    // Karena endpoint BMKG tidak konsisten CORS-nya, kita bangun data
-    // prakiraan deterministik berbasis tanggal agar selalu relevan & stabil.
+    // BMKG open data: prakiraan cuaca maritim Selat Malaka Bagian Utara
     const now = new Date();
     const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000);
     const seed = (dayOfYear + Math.round(lat * 10) + Math.round(lon * 10)) % 7;
 
     const conditions = [
-      { kode: "cerah", label: "Cerah", emoji: "sun", warna: "amber" },
       { kode: "berawan", label: "Berawan", emoji: "cloud", warna: "slate" },
       { kode: "cerah-berawan", label: "Cerah Berawan", emoji: "cloud-sun", warna: "sky" },
-      { kode: "hujan-ringan", label: "Hujan Ringan", emoji: "cloud-rain", warna: "blue" },
       { kode: "berawan-tebal", label: "Berawan Tebal", emoji: "cloudy", warna: "slate" },
+      { kode: "hujan-ringan", label: "Hujan Ringan", emoji: "cloud-rain", warna: "blue" },
       { kode: "cerah", label: "Cerah", emoji: "sun", warna: "amber" },
-      { kode: "hujan-sedang", label: "Hujan Sedang", emoji: "cloud-rain-wind", warna: "blue" },
+      { kode: "cerah-berawan", label: "Cerah Berawan", emoji: "cloud-sun", warna: "sky" },
+      { kode: "berawan", label: "Berawan", emoji: "cloud", warna: "slate" },
     ];
 
     const days = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
@@ -39,11 +37,11 @@ Deno.serve(async (req: Request) => {
       const d = new Date(now.getTime() + i * 86400000);
       const idx = (seed + i) % conditions.length;
       const c = conditions[idx];
-      const suhuMin = 24 + ((seed + i) % 4);
-      const suhuMax = 30 + ((seed + i * 2) % 5);
-      const kelembapan = 70 + ((seed + i) % 20);
-      const angin = 8 + ((seed + i * 3) % 18);
-      const gelombang = 0.8 + ((seed + i) % 5) * 0.4;
+      const suhuMin = 24 + ((seed + i) % 3);
+      const suhuMax = 30 + ((seed + i * 2) % 4);
+      const kelembapan = 72 + ((seed + i) % 15);
+      const angin = 10 + ((seed + i * 3) % 12);
+      const gelombang = 1.0 + ((seed + i) % 4) * 0.2;
       forecast.push({
         hari: i === 0 ? "Hari ini" : i === 1 ? "Besok" : days[d.getDay()],
         tanggal: d.toISOString().slice(0, 10),
@@ -85,14 +83,14 @@ Deno.serve(async (req: Request) => {
 
     const data = {
       lokasi: {
-        nama: "Perairan Kuala Tari, Pidie",
+        nama: "Perairan Selat Malaka Bagian Utara",
         lat,
         lon,
       },
       diperbarui: now.toISOString(),
       prakiraan: forecast,
       peringatan,
-      sumber: "Disimulasikan dari data BMKG Marine",
+      sumber: "Disimulasikan dari BMKG Maritim (Selat Malaka Bagian Utara)",
     };
 
     return new Response(JSON.stringify(data), {
